@@ -1,12 +1,12 @@
 
 ## Set parameters of the bivarate Gaussian distribution.
 # Means
-mu = c(1,1)
+mu = c(0,0)
 # Covariance \rho
-rho = 0.3
+rho = 0.9
 
 # Number of sweeps (in one sweep, all parameters are updated once). Watch how your results become more accurate when you increase this value!
-niter = 50
+niter = 5000
 
 # Create a matrix to store the results in. The matrix has size niter x 2, because we store a value for x_1 and for x_2 at each iteration.
 samples = matrix(0L, nrow=niter, ncol=2)
@@ -16,18 +16,19 @@ samples[1,] = runif(2, min=-3, max=3)
 
 # Loop over n-1 iterations.
 for (iter in 2:niter) {
-  # This is where you come in!
   
-  # Loop over x_1 and x_2. {
-  
+  # Loop over x_1 and x_2. 
+  for (i in 1:2){
     # Find the *most recent* value for the *other* x (so x_{not i}).
+    lastvalue = samples[iter-(i%%2),(i%%2)+1]
     
-    # Draw a new value for x_i, given x_{not i}, using Equation 4 in the exercise.
+    # Draw a new value for x_i, given x_{not i}, using Equation 6 in the exercise.
+    newvalue = rnorm(1, rho * lastvalue, sqrt(1 - rho^2))
     
     # Store the new value in the samples matrix.
-  # }
+    samples[iter,i] = newvalue
+  }
 }
-
 
 # The code below provides a scatter plot for your results. Include this in your solution.
 x1 = samples[,1]

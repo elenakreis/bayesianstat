@@ -19,8 +19,8 @@ plot_tres <- plot(k, poisson_pdf(k,10))
 
 # 1.3 Plot Gamma
 plot_four <- plot(lambda, gamma_pdf(lambda,1,1))
-plot_five <- plot(lambda, gamma_pdf(lambda,1,2))
-plot_six <- plot(lambda, gamma_pdf(lambda,9,0.5))
+plot_five <- plot(lambda, gamma_pdf(lambda,5,2))
+plot_six <- plot(lambda, gamma_pdf(lambda,15,5))
 
 # Plot posterior, two ways
 # 1.4
