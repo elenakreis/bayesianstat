@@ -10,6 +10,7 @@ b <- function(w,k){
 }
 
 N = 12
+z = 8
 
 w1 = 0.25
 w2 = 0.75
@@ -30,17 +31,40 @@ theta2 = seq(0,1,len=100)
 plot2 = plot(theta2, dbeta(theta2, a2, b2), type='l')
 
 #2.2
-#p(m1|z,N)?
+priorm1 = 0.5
+priorm2 = 0.5
 
 pD = function(z,N,a,b) { exp( lbeta(z+a,N-z+b) - lbeta(a,b) ) } # should we use this one?
 
-... = pD(8,12,a1,b1)
+pDm1 = pD(z,N,a1,b1)
+pDm2 = pD(z,N,a2,b2)
+
+bayesFactor = pDm1/pDm2
+
+probratio = bayesFactor*(priorm1/priorm2)
+postm1 = probratio/(1+probratio)
+postm2 = 1-postm1
 
 
+#2.3
+k = 180
 
+a1 = a(w1,k)
+b1 = b(w1,k)
 
+a2 = a(w2,k)
+b2 = b(w2,k)
 
+pD = function(z,N,a,b) { exp( lbeta(z+a,N-z+b) - lbeta(a,b) ) } # should we use this one?
 
+pDm1 = pD(z,N,a1,b1)
+pDm2 = pD(z,N,a2,b2)
+
+bayesFactor = pDm1/pDm2
+
+probratio = bayesFactor*(priorm1/priorm2)
+postm1 = probratio/(1+probratio)
+postm2 = 1-postm1
 
 
 
