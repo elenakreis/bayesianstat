@@ -150,10 +150,20 @@ plotGaussian(x, 10.21352, 1.812934)
 
 # Set the initial parameters
 N = 1000
-df = 1
+df = 2
+
+mu_hat = 100
+sigma_hat = 5.0
+
+a = 1
+b = 5
 
 # Generate observations here
 x = rep(0, N)
+
+for(i in 1:N){
+  x[i] = rt(1, df)
+}
 
 
 hist(x, breaks = 50)
@@ -163,9 +173,13 @@ hist(x, breaks = 50)
 model3.string = "
 model {
   # Prior
-  
-  
+    mu ~ dnorm(mu_hat, 1/(sigma_hat^2))
+    sigma ~ dgamma(a, b)
+
   # Likelihood
+  for(i in 1:N){
+    x[i] ~ dnorm(mu, 1/(sigma^2))
+  }
 }
 "
 
@@ -175,14 +189,20 @@ model3.spec = textConnection(model3.string)
 # Construct the object containing both the model specification as well as the data and some sampling parameters.
 jagsmodel3 <- jags.model(model3.spec,
                          data = list('N' = N,                    # the number of data points
-                                     'x' = x                     # the observations
+                                     'x' = x,                     # the observations
+                                     'mu_hat' = mu_hat,
+                                     'sigma_hat' = sigma_hat,
+                                     'a' = a,
+                                     'b' = b
                          ),  
                          n.chains=4)
 
 mcmciterations = 10000 
 samples = coda.samples(jagsmodel3,
-                       c(''), # which variables do you want to monitor?
+                       c('sigma'), # which variables do you want to monitor?
                        n.iter=mcmciterations)
 
 
 # plot/interpret the results
+plotPost(samples)
+plotGaussian(x, -0.1124487, 3.304665)

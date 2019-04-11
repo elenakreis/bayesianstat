@@ -16,14 +16,28 @@ n = 40
 k = c(19, 20, 16, 23, 22, 30, 38, 29, 34, 35, 35, 32, 37, 36, 33)
 p = length(k)
 
+psi = 0.5
+omega = 0.5
+
+a = 4
+b = 2
 
 # THE MODEL
 exammodel1.string = "
   model {
     ## Prior
-
-
+    for(i in 1:p){
+        z[i] ~ dbern(omega)
+    }
+    phi ~ dbeta(a,b)
+    for(i in 1:2){
+        theta[i] = (1-z[i])*psi + z[i]*phi
+    }
+    
     ## Likelihood
+    for(i in 1:p){
+        k[i] ~ dbin(theta[z[i]], n)
+    }
   }
 "
 
@@ -38,12 +52,17 @@ nchains = 4
 jagsmodel1 <- jags.model(exammodel1.spec,
                    data = list('k' = k,
                                'n' = n,
-                               'p' = p),
+                               'p' = p,
+                               'psi' = psi,
+                               'omega' = omega,
+                               'a' = a,
+                               'b' = b
+                               ),
                    n.chains = nchains)
 
 # Collect samples to approximate the posterior distribution.
 model1samples = coda.samples(jagsmodel1,
-                           c(''), # which variables do you want to model
+                           c('theta'), # which variables do you want to model
                            n.iter = niter)
 
 
