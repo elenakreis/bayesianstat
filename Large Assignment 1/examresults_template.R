@@ -31,12 +31,12 @@ exammodel1.string = "
     }
     phi ~ dbeta(a,b)
     for(i in 1:2){
-        theta[i] = (1-z[i])*psi + z[i]*phi
+        theta[i] <- (1-(i-1))*psi + (i-1)*phi
     }
     
     ## Likelihood
     for(i in 1:p){
-        k[i] ~ dbin(theta[z[i]], n)
+        k[i] ~ dbin(theta[z[i]+1], n)
     }
   }
 "
@@ -62,12 +62,19 @@ jagsmodel1 <- jags.model(exammodel1.spec,
 
 # Collect samples to approximate the posterior distribution.
 model1samples = coda.samples(jagsmodel1,
-                           c('theta'), # which variables do you want to model
+                           c('theta','z'), # which variables do you want to model
                            n.iter = niter)
 
 
 # Add your analyses based on the collected samples here:
+#diagMCMC(codaObject = model1samples, parName = 'theta')
+#plotPost(model1samples[,'theta'], main = 'theta', xlab = bquote(theta))
 
+png('plot_1.png')
+plot(model1samples)
+dev.off()
+
+summary(model1samples)
 
 #----------   Model 2: exam scores with individual differences   --------------
 
@@ -84,17 +91,30 @@ n = 40
 k = c(19, 20, 16, 23, 22, 30, 38, 29, 34, 35, 35, 32, 37, 36, 33)
 p = length(k)
 
+mu = 0.85
+kappa = 2
+omega = 0.5
+psi = 0.5
+
 
 # THE MODEL
 exammodel2.string = "
   model {
     ## Prior
-
+    for(i in 1:p){
+      z[i] ~ dbern(omega)
+    }
+    for(i in 1:p){
+      phi[i] ~ dbeta(mu*kappa, (1-mu)*kappa)
+    }
+    for(i in 1:p){
+      theta[i] <- (1-z[i])*psi + z[i]*phi[i]
+    }
     
-
-    ## Likelihood    
-
-    
+    ## Likelihood
+    for(i in 1:p){
+      k[i] ~ dbin(theta[i], n)
+    }
   }
 "
 
@@ -108,17 +128,22 @@ mcmciterations = 1000
 jagsmodel2 <- jags.model(exammodel2.spec,
                          data = list('k' = k,
                                      'n' = n,
-                                     'p' = p),
+                                     'p' = p,
+                                     'mu' = mu,
+                                     'kappa' = kappa,
+                                     'omega' = omega,
+                                     'psi' = psi
+                                     ),
                          n.chains = 4)
 
 # Collect samples to approximate the posterior distribution.
 model2samples = coda.samples(jagsmodel2,
-                           c(''), # which variables do you want to monitor?
+                           c('theta','z'), # which variables do you want to monitor?
                            n.iter = mcmciterations)
 
 
 # Add your analyses on the collected samples here:
-
+summary(model2samples)
 
 
 #----------   Model 3: easy and difficult questions   --------------
