@@ -157,25 +157,38 @@ m = 20
 
 k1 = matrix(0L, nrow = n, ncol = m)
 
-k1[1,] = c( 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 1, 0, 0)
+k1[1,] = c( 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 0, NA, 0, 0, 1, 0, 1, 0, 0)
 k1[2,] = c( 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 k1[3,] = c( 0, 0, 1, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0)
 k1[4,] = c( 0, 0, 0, 0, 0, 0, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 k1[5,] = c( 1, 0, 1, 1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0)
 k1[6,] = c( 1, 1, 0, 1, 0, 0, 0, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 1, 0, 0)
 k1[7,] = c( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0)
-k1[8,] = c( 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
+k1[8,] = c( 0, 0, 0, 0, NA, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 k1[9,] = c( 0, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0, 0, 0, 0, 1, 0, 1)
-k1[10,] = c( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0)
-
+k1[10,] = c( 1, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, NA, 0, 0)
 
 # THE MODEL
 exammodel3.string = "
   model {
     ## Prior
-
-
+    for(i in 1:n){
+      p[i] ~ dbeta(1,1)
+    }
+    for(j in 1:m){
+      q[j] ~ dbeta(1,5)
+    }
+    for(i in 1:n){
+      for(j in 1:m){
+        theta[i, j] = p[i]*q[j]
+      }
+    }
     ## Likelihood  
+    for(i in 1:n){
+      for(j in 1:m){
+        k[i, j] ~ dbern(theta[i, j])
+      }
+    } 
   }
 "
 
@@ -195,12 +208,13 @@ jagsmodel3 <- jags.model(exammodel3.spec,
 
 # Collect samples to approximate the posterior distribution.
 model3samples = coda.samples(jagsmodel3,
-                             c(''), # which variables do you want to monitor
+                             c('k'), # which variables do you want to monitor
                              n.iter = mcmciterations)
 
 # Add your analyses on the collected samples here:
+summary(model3samples)
 
-
+#mean_of_variable1 = summary_statistics $ statistics [1]
 #----------   Model 4: differences between groups   --------------
 
 # Optional generic preliminaries:
@@ -212,14 +226,22 @@ n2 = 49
 k1 = 37
 k2 = 48
 
-
+a1 = 1
+b1 = 1
+a2 = 1
+b2 = 1
 
 # THE MODEL
 exammodel3.string = "
 model {
   ## Prior 
+  theta1 ~ dbeta(a1, b1)
+  theta2 ~ dbeta(a2, b2)
+  delta = abs(theta1-theta2)
 
   ## Likelihood
+  k1 ~ dbin(theta1, n1)
+  k2 ~ dbin(theta2, n2)
 }
 "
 
@@ -235,14 +257,23 @@ jagsmodel3 <- jags.model(exammodel3.spec,
                          data = list('k1' = k1,
                                      'k2' = k2,
                                      'n1' = n1,
-                                     'n2' = n2),
+                                     'n2' = n2,
+                                     'a1' = a1,
+                                     'b1' = b1,
+                                     'a2' = a2,
+                                     'b2' = b2
+                                     ),
                          n.chains = 4)
 
 # Collect samples to approximate the posterior distribution.
 model3samples = coda.samples(jagsmodel3,
-                             c(''), # which variables do you want to monitor
+                             c('delta'), # which variables do you want to monitor
                              n.iter = mcmciterations)
 
 # Add your analyses on the collected samples here:
 
+png('plot_1.png')
+plot(model3samples)
+dev.off()
 
+summary(model3samples)
