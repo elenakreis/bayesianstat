@@ -14,9 +14,16 @@ n = length(y)
 crime_model ="
 model{      
   # Prior 
-  
-  # Likelihood
+  tau ~ dgamma(0.01, 0.01)
+  w0 ~ dnorm(0, 1)
+  w1 ~ dnorm(0, 1)
 
+  # Likelihood
+  for (i in 1:n){
+    mu[i] = w0 + w1*x[i]
+    y[i] ~ dnorm(mu[i], tau)
+  }
+}
 "
 
 
@@ -24,20 +31,24 @@ niter = 10000
 nchains = 4
 
 # Specify your data structure here
-data = list()
+data = list('x' = x, 'n' = n, 'y' = y)
 
 jagsmodel_crime <- jags.model(textConnection(crime_model), 
                               data = data,
                               n.chains = nchains)
 
 # Specify which parameters you want the sampler to store
-store_parameters = c()
+store_parameters = c('w0', 'w1')
 
 # Collect samples and store them in a matrix of niter*nchains by number-of-stored-parameters
 samples_crime = coda.samples(jagsmodel_crime, store_parameters, n.iter = niter)
 samplesMatrix = as.matrix(samples_crime)
 
+# 1.1.2
 
+plotPost(samples_crime)
+
+# 1.1.3
 
 plot(x,y, xlab = "Percentage change in manpower", ylab = "Percentage change in thefts", pch=20)
 
