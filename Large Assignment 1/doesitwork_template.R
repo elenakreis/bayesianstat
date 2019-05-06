@@ -31,7 +31,7 @@ plotGaussian <- function(data, mean, sd) {
 # Set the initial parameters
 
 sigma = 2.0
-N = 10
+N = 1000
 mu = 10
 
 mu_hat = 100
@@ -87,7 +87,7 @@ plotPost(samples)
 
 # Set the initial parameters
 sigma = 2.0
-N = 100
+N = 10
 mu = 10
 
 mu_hat = 100
