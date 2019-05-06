@@ -91,4 +91,25 @@ sorted_order = plot_evidences(evidences, sortBy=4)
 print(datasets[511,])
 print(datasets[512,])
 
+bayesFactor_511_m0_m3 = evidences[511,1]/evidences[511,4] 
+bayesFactor_512_m0_m3 = evidences[512,1]/evidences[512,4] 
+
+# 2.4 
+m0_better_m3 = sum(evidences[,1] > evidences[,4])
+
+for (i in 1:nmodels){
+  for (j in 1:nmodels){
+    if(i!=j){
+    mi_better_mj = sum(evidences[,i] > evidences[,j])
+    print(sprintf("Model %d is favored over model %d for %d datasets", i-1, j-1, mi_better_mj))
+    }
+  }
+}
+
+
+
+
+
+
+
 
