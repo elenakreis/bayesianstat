@@ -46,11 +46,23 @@ samplesMatrix = as.matrix(samples_crime)
 
 # 1.1.2
 
-plotPost(samples_crime)
+plot(samples_crime)
+hist(samplesMatrix[,1], breaks = 50) # w0
+hist(samplesMatrix[,2], breaks = 50) # w1
 
 # 1.1.3
 
 plot(x,y, xlab = "Percentage change in manpower", ylab = "Percentage change in thefts", pch=20)
+abline(a = mean(samplesMatrix[,1]), b = mean(samplesMatrix[,2]))
 
+
+# 1.1.4
+# Generate random indices for 500 samples
+rand_indices = sample(1:dim(samplesMatrix)[1], 500, replace = F)
+for (i in 1:500){
+  w0 = samplesMatrix[rand_indices[i],1]
+  w1 = samplesMatrix[rand_indices[i],2]
+  abline(w0, w1,  col=rgb(0.8, 0.2, 0.2, max = 1.0, alpha = 0.1))
+}
 
 
