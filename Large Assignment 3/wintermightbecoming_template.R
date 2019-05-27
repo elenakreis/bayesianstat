@@ -15,7 +15,19 @@ nE = 4241
 
 winter_model = "
 model{
+  thetaW ~ dbeta(1,1)
+  thetaE ~ dbeta(1,1)
   
+  sW ~ dbin(thetaW, nW)
+  sE ~ dbin(thetaE, nE)
+
+  delta = abs(thetaE - thetaW)
+  
+  # Prior 
+  thetaW.prior ~ dbeta(1,1)
+  thetaE.prior ~ dbeta(1,1)
+  
+  delta.prior = abs(thetaE.prior - thetaW.prior)
 }
 "
 
@@ -25,7 +37,7 @@ nsamples = niter*nchains
 
 data <- list('sE' = sE, 'sW' = sW, 'nE' = nE, 'nW' = nW) # to be passed on to JAGS
 
-parameters <- c() # fill in!
+parameters <- c('delta', 'delta.prior') # fill in!
 
 jagsmodel_winter <- jags.model(textConnection(winter_model), 
                                data = data, 
@@ -34,8 +46,11 @@ jagsmodel_winter <- jags.model(textConnection(winter_model),
 samples_winter = coda.samples(jagsmodel_winter, parameters, n.iter = niter)
 samples = as.matrix(samples_winter)
 
-samples.post = # fill in!
-samples.prior =  # fill in
+# Show posterior distribution
+plot(samples_winter)
+
+samples.post = samples[,'delta']
+samples.prior =  samples[,'delta.prior']
 
 
 
@@ -54,41 +69,51 @@ histogram2$counts = (histogram2$counts / nsamples) / binwidth2
 
 
 # Plot the histograms
-plot( histogram1, col=rgb(0,0,1,1/2), xlim=c(-1,1), xlab = expression(delta), ylab = 'Probability density') 
+plot( histogram1, col=rgb(0,0,1,1/2), xlim=c(-1,1), xlab = expression(delta), ylab = 'Probability density')
 plot( histogram2, col=rgb(1,0,0,1/2), xlim=c(-1,1), add=T) 
 
 # Comment out the next line once you've installed this package
-install.packages('polspline')
+#install.packages('polspline')
 library(polspline) 
 fit.posterior <- logspline(samples.post, lbound = -1, ubound = 1)
 fit.prior <- logspline(samples.prior, lbound = -1, ubound = 1)
-plot(fit.posterior, xlim = c(-1,1), add=T)
-plot(fit.prior, xlim=c(-1,1), add=T)
+plot(fit.posterior, col='blue', xlim = c(-1,1), add=T)
+plot(fit.prior, col= 'red', xlim=c(-1,1), add=T)
 
 
-posterior_at_0 <- dlogspline() # fill in
-prior_at_0     <- dlogspline() # fill in
+posterior_at_0 <- dlogspline(0, fit.posterior) # fill in
+prior_at_0     <- dlogspline(0, fit.prior) # fill in
 
 par(mfrow=c(1,2))
 # Normal plot
-plot(fit.posterior, xlim=c(), xlab = expression(delta), ylab = 'Probability density') # set the correct xlim (x axis limits)
+plot(fit.posterior, xlim=c(-1,1), xlab = expression(delta), ylab = 'Probability density') # set the correct xlim (x axis limits)
 plot(fit.prior, add = T, lty = 2)
 # Add plotting of the circles at (delta, p(delta=0)). Hint: look up 'pch' for plotting in R
+points(0, posterior_at_0, pch = 19)
+points(0, prior_at_0, pch = 19)
 title('Full distributions')
 legend(x = 'topleft', 1.9, c('Posterior', 'Prior'), lty=c(1,2))
 
 # Zoomed plot
-plot(fit.posterior, xlab = expression(delta), ylab = 'Probability density') # Set both xlim and ylim to zoom in.
-plot(fit.prior, add = T, lty = 2) # You need to set the same xlim here for the plot to display properly.
+plot(fit.posterior, xlim = c(-0.05,0.05), ylim = c(0,0.8), xlab = expression(delta), ylab = 'Probability density') # Set both xlim and ylim to zoom in.
+plot(fit.prior, xlim = c(-0.05,0.05), ylim = c(0,0.8), add = T, lty = 2) # You need to set the same xlim here for the plot to display properly.
 # Add plotting of the circles at (delta, p(delta=0)). Hint: look up 'pch' for plotting in R
+points(0, posterior_at_0, pch = 19)
+points(0, prior_at_0, pch = 19)
 title('Zoomed plot')
 legend(x = 'topleft', 1.9, c('Posterior', 'Prior'), lty=c(1,2))
 
 
 # Compute Savage-Dickey ratios:
-
+BF_10_SD = 0.15/0.6
 
 # Compute analytical Bayes factor:
+m0 = log(lchoose(nE,sE)) + log(lchoose(nW,sW)) - log(lchoose(nE+nW, sE+sW))
+m1 = log(nE+1) + log(nW+1) - log(nE+nW+1)
 
+BF_01_analytical = m0 + m1
+BF_01_analytical = exp(BF_01_analytical)
+BF_10_analytical = 1/BF_01_analytical
+## Something is still wrong with this value / computation...
 
 # Compute relevant quantities for report:
