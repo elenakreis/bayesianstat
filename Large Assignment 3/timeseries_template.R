@@ -133,7 +133,7 @@ nchains=4
 nsamples = niter*nchains
 
 data <- list('n' = n, 'y' = y) # to be passed on to JAGS
-parameters <- c('m','sigma') # fill in
+parameters <- c('m') # fill in
 jagsmodel <- jags.model(textConnection(model_timeseries_or_notimeseres),
                         data = data, 
                         n.chains = nchains)
@@ -142,6 +142,7 @@ samples = as.matrix(coda.samples(jagsmodel, parameters, n.iter = niter))
 
 # Compute the Bayes factor of the comparison:
 
-post_m0 = sum(samples[,'m']==1) / dim(samples)[1]
+post_m0 = sum(samples) / length(samples)
 post_m1 = 1 - post_m0
 bayes_factor = post_m1 / post_m0
+

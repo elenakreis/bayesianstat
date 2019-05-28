@@ -5,7 +5,7 @@ rm(list=ls())
 # Required packages for this exercise.
 require(rjags)
 require(coda)
-# --> fix path for your own system: source("R/DBDA2Eprograms/DBDA2E-utilities.R")
+source("C:/Users/Elena/Documents/DBDA2Eprograms/DBDA2Eprograms/DBDA2E-utilities.R")
 
 sW = 277
 nW = 412
@@ -21,13 +21,13 @@ model{
   sW ~ dbin(thetaW, nW)
   sE ~ dbin(thetaE, nE)
 
-  delta = abs(thetaE - thetaW)
+  delta = thetaE - thetaW
   
   # Prior 
   thetaW.prior ~ dbeta(1,1)
   thetaE.prior ~ dbeta(1,1)
   
-  delta.prior = abs(thetaE.prior - thetaW.prior)
+  delta.prior = thetaE.prior - thetaW.prior
 }
 "
 
@@ -84,7 +84,7 @@ plot(fit.prior, col= 'red', xlim=c(-1,1), add=T)
 posterior_at_0 <- dlogspline(0, fit.posterior) # fill in
 prior_at_0     <- dlogspline(0, fit.prior) # fill in
 
-par(mfrow=c(1,2))
+#par(mfrow=c(1,2))
 # Normal plot
 plot(fit.posterior, xlim=c(-1,1), xlab = expression(delta), ylab = 'Probability density') # set the correct xlim (x axis limits)
 plot(fit.prior, add = T, lty = 2)
@@ -95,8 +95,8 @@ title('Full distributions')
 legend(x = 'topleft', 1.9, c('Posterior', 'Prior'), lty=c(1,2))
 
 # Zoomed plot
-plot(fit.posterior, xlim = c(-0.05,0.05), ylim = c(0,0.8), xlab = expression(delta), ylab = 'Probability density') # Set both xlim and ylim to zoom in.
-plot(fit.prior, xlim = c(-0.05,0.05), ylim = c(0,0.8), add = T, lty = 2) # You need to set the same xlim here for the plot to display properly.
+plot(fit.posterior, xlim = c(-0.05,0.05), ylim = c(0,1.5), xlab = expression(delta), ylab = 'Probability density') # Set both xlim and ylim to zoom in.
+plot(fit.prior, xlim = c(-0.05,0.05), ylim = c(0,1.5), add = T, lty = 2) # You need to set the same xlim here for the plot to display properly.
 # Add plotting of the circles at (delta, p(delta=0)). Hint: look up 'pch' for plotting in R
 points(0, posterior_at_0, pch = 19)
 points(0, prior_at_0, pch = 19)
@@ -105,10 +105,18 @@ legend(x = 'topleft', 1.9, c('Posterior', 'Prior'), lty=c(1,2))
 
 
 # Compute Savage-Dickey ratios:
-BF_10_SD = 0.6/0.15
+BF_10_SD = 1/0.25
 
 # Compute analytical Bayes factor:
 BF_01_analytical = exp(lchoose(nE,sE) + lchoose(nW,sW) - lchoose(nE+nW, sE+sW) + log(nE+1) + log(nW+1) - log(nE+nW+1))
 BF_10_analytical = 1/BF_01_analytical
 
 # Compute relevant quantities for report:
+
+# p(m0|D)
+posterior_at_0
+
+# 95% HDI of p(delta|D,m1)
+plotPost(samples[,'delta'])
+
+
