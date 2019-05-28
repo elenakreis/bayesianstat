@@ -105,15 +105,10 @@ legend(x = 'topleft', 1.9, c('Posterior', 'Prior'), lty=c(1,2))
 
 
 # Compute Savage-Dickey ratios:
-BF_10_SD = 0.15/0.6
+BF_10_SD = 0.6/0.15
 
 # Compute analytical Bayes factor:
-m0 = log(lchoose(nE,sE)) + log(lchoose(nW,sW)) - log(lchoose(nE+nW, sE+sW))
-m1 = log(nE+1) + log(nW+1) - log(nE+nW+1)
-
-BF_01_analytical = m0 + m1
-BF_01_analytical = exp(BF_01_analytical)
+BF_01_analytical = exp(lchoose(nE,sE) + lchoose(nW,sW) - lchoose(nE+nW, sE+sW) + log(nE+1) + log(nW+1) - log(nE+nW+1))
 BF_10_analytical = 1/BF_01_analytical
-## Something is still wrong with this value / computation...
 
 # Compute relevant quantities for report:
