@@ -2,7 +2,7 @@
 graphics.off() # This closes all of R's graphics windows.
 rm(list=ls())
 
-setwd("C:/Users/Mihaela/Desktop/Uni/B2/Sem 2/Bayesian Statistics/Large Assignmnet 3/data and templates")
+#setwd("C:/Users/Mihaela/Desktop/Uni/B2/Sem 2/Bayesian Statistics/Large Assignmnet 3/data and templates")
 
 # Required packages for this exercise.
 require(rjags)
@@ -217,6 +217,6 @@ samples = as.matrix(mcmcsamples)
 
 # Compute the Bayes factor 10 (i.e. temporal dependency / no dependency):
 sum(samples) / (nrow(samples) - sum(samples))
-#1.009243
+#2.29
 
 
